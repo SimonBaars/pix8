@@ -155,6 +155,9 @@ window.Pix8 = {
           var iframeDoc = $browser[0].contentDocument || $browser[0].contentWindow?.document;
           if(iframeDoc && iframeDoc.body) {
             console.log('Iframe content loaded successfully, body length:', iframeDoc.body.innerHTML.length);
+            
+            // Prefetch images in iframe
+            this.prefetchIframeImages($browser[0]);
           } else {
             console.warn('Iframe may be blocked by X-Frame-Options or content not loaded yet');
           }
@@ -168,21 +171,77 @@ window.Pix8 = {
       if(typeof this.siteLoaded === 'function' && src){
         try {
           var title = '';
+          var actualUrl = src;
           try {
-            title = $browser[0].contentDocument?.title || '';
+            var iframeDoc = $browser[0].contentDocument || $browser[0].contentWindow?.document;
+            if(iframeDoc) {
+              title = iframeDoc.title || '';
+              // Try to get actual URL from iframe
+              try {
+                actualUrl = iframeDoc.location.href || src;
+              } catch(e) {
+                // Can't access location due to cross-origin
+              }
+            }
           } catch(e) {
             // Cross-origin, can't access
           }
-          this.siteLoaded({target: {document: {src: src, title: title}}});
+          this.siteLoaded({target: {document: {src: actualUrl, title: title}}});
         } catch(e) {
           console.warn('Error in siteLoaded:', e);
         }
       }
     });
     
+    // Listen for navigation messages from iframe
+    window.addEventListener('message', (ev) => {
+      if(ev.data && ev.data.type === 'iframe-navigation'){
+        var url = ev.data.url;
+        // Extract original URL from proxy URL if needed
+        if(url.indexOf('/proxy?u=') === 0){
+          try {
+            url = decodeURIComponent(url.split('u=')[1].split('&')[0]);
+          } catch(e) {
+            console.warn('Error decoding proxy URL:', e);
+          }
+        }
+        // Update URL input field
+        $('#pix8-url').val(url);
+        console.log('Iframe navigated to:', url);
+      }
+    });
+    
     $browser.on('error', ev => {
       console.error('Browser iframe error loading:', $browser.attr('src'));
     });
+  },
+  
+  prefetchIframeImages(iframe){
+    try {
+      var iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if(!iframeDoc || !iframeDoc.body) return;
+      
+      var images = iframeDoc.querySelectorAll('img[src]');
+      var prefetched = 0;
+      images.forEach(function(img){
+        var src = img.getAttribute('src');
+        if(src && src.indexOf('data:') !== 0){
+          // Create prefetch link
+          var link = iframeDoc.createElement('link');
+          link.rel = 'prefetch';
+          link.as = 'image';
+          link.href = src;
+          iframeDoc.head.appendChild(link);
+          prefetched++;
+        }
+      });
+      if(prefetched > 0){
+        console.log('Prefetched', prefetched, 'images from iframe');
+      }
+    } catch(e) {
+      // Cross-origin, can't access
+      console.log('Cannot prefetch images (cross-origin):', e.message);
+    }
   },
 
   getLink(path){

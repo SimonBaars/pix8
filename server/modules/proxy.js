@@ -104,7 +104,102 @@ GET['proxy'] = function(q){
 
 					// Add base tag if not present
 					if($('base').length === 0){
+						$('base').remove(); // Remove any existing base tags first
 						$('head').prepend('<base href="' + targetUrl + '">');
+					}
+
+					// Inject navigation handler script to keep links in iframe
+					var navScript = `
+<script>
+(function(){
+	// Intercept link clicks to ensure they stay in iframe
+	document.addEventListener('click', function(e){
+		var link = e.target.closest('a[href]');
+		if(link && link.href){
+			var href = link.getAttribute('href');
+			// Only intercept if it's a proxy link or needs to be proxied
+			if(href.indexOf('/proxy?u=') === 0 || href.indexOf('http://') === 0 || href.indexOf('https://') === 0){
+				// If it's already a proxy link, let it navigate normally
+				if(href.indexOf('/proxy?u=') === 0){
+					return; // Let it navigate
+				}
+				// Otherwise, prevent default and navigate through proxy
+				e.preventDefault();
+				e.stopPropagation();
+				var proxyUrl = '/proxy?u=' + encodeURIComponent(href);
+				window.location.href = proxyUrl;
+				return false;
+			}
+		}
+	}, true);
+	
+	// Handle form submissions
+	document.addEventListener('submit', function(e){
+		var form = e.target;
+		if(form.tagName === 'FORM' && form.action){
+			var action = form.getAttribute('action');
+			if(action && (action.indexOf('http://') === 0 || action.indexOf('https://') === 0)){
+				if(action.indexOf('/proxy?u=') !== 0){
+					e.preventDefault();
+					var proxyUrl = '/proxy?u=' + encodeURIComponent(action);
+					form.action = proxyUrl;
+					form.submit();
+					return false;
+				}
+			}
+		}
+	}, true);
+	
+	// Notify parent window of navigation
+	var notifyParent = function(){
+		try {
+			if(window.parent && window.parent !== window){
+				window.parent.postMessage({
+					type: 'iframe-navigation',
+					url: window.location.href,
+					title: document.title
+				}, '*');
+			}
+		} catch(e) {
+			// Cross-origin, can't access
+		}
+	};
+	
+	// Notify on load
+	notifyParent();
+	
+	// Notify on hash change
+	window.addEventListener('hashchange', notifyParent);
+	
+	// Prefetch images for better performance
+	var prefetchImages = function(){
+		var images = document.querySelectorAll('img[src]');
+		images.forEach(function(img){
+			var src = img.getAttribute('src');
+			if(src && src.indexOf('data:') !== 0){
+				var link = document.createElement('link');
+				link.rel = 'prefetch';
+				link.as = 'image';
+				link.href = src;
+				document.head.appendChild(link);
+			}
+		});
+	};
+	
+	// Prefetch images after page load
+	if(document.readyState === 'loading'){
+		document.addEventListener('DOMContentLoaded', prefetchImages);
+	} else {
+		prefetchImages();
+	}
+})();
+</script>`;
+					
+					// Inject script before closing body tag, or in head if no body
+					if($('body').length > 0){
+						$('body').append(navScript);
+					} else {
+						$('head').append(navScript);
 					}
 
 					content = $.html();
