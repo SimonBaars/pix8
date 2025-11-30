@@ -310,7 +310,7 @@
     width: 100%;
     height: 100vh;
     border: none;
-    z-index: 50;
+    z-index: 1;
     background: white;
     display: none; /* Hidden by default, shown when URL is loaded */
     margin-top: 0;
@@ -320,6 +320,7 @@
 #browser-window.active{
     display: block !important;
     visibility: visible !important;
+    z-index: 1 !important;
 }
 
 body.has-browser #pic{
@@ -330,4 +331,5 @@ body.has-browser #pic{
 body.has-browser #browser-window{
     margin-top: 0;
     top: 0;
+    z-index: 1;
 }
