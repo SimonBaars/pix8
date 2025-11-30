@@ -44,4 +44,12 @@ $(document).on('loaded', ev => {
       log: d
     });
   }
+  
+  // Test browser with Google to verify proxy works
+  setTimeout(() => {
+    if(typeof Pix8 !== 'undefined' && typeof Pix8.onSite === 'function') {
+      console.log('=== TESTING: Loading google.com via proxy ===');
+      Pix8.onSite('https://www.google.com');
+    }
+  }, 2000);
 });
