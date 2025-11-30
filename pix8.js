@@ -136,6 +136,22 @@ window.Pix8 = {
     $browser.on('load', ev => {
       var src = $browser.attr('src');
       console.log('Browser iframe loaded:', src);
+      
+      // Check if iframe actually loaded (some sites block iframe embedding)
+      setTimeout(() => {
+        try {
+          var iframeDoc = $browser[0].contentDocument || $browser[0].contentWindow?.document;
+          if(iframeDoc && iframeDoc.body) {
+            console.log('Iframe content loaded successfully');
+          } else {
+            console.warn('Iframe may be blocked by X-Frame-Options. Consider opening in new window.');
+          }
+        } catch(e) {
+          // Cross-origin, can't access - this is normal for external sites
+          console.log('Cross-origin iframe (normal for external sites)');
+        }
+      }, 1000);
+      
       // Trigger siteLoaded event if needed
       if(typeof this.siteLoaded === 'function' && src){
         try {
@@ -154,6 +170,11 @@ window.Pix8 = {
     
     $browser.on('error', ev => {
       console.error('Browser iframe error loading:', $browser.attr('src'));
+      // Optionally open in new window as fallback
+      var src = $browser.attr('src');
+      if(src && confirm('This site may block iframe embedding. Open in new window?')){
+        window.open(src, '_blank');
+      }
     });
   },
 

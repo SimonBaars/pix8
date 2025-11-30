@@ -313,12 +313,19 @@
     z-index: 50;
     background: white;
     display: none; /* Hidden by default, shown when URL is loaded */
+    margin-top: 0;
 }
 
 #browser-window.active{
-    display: block;
+    display: block !important;
 }
 
 body.has-browser #pic{
     z-index: 100; /* Keep pix8 header above browser */
+    position: relative;
+}
+
+body.has-browser #browser-window{
+    margin-top: 0;
+    top: 0;
 }
