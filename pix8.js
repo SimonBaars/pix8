@@ -124,30 +124,36 @@ window.Pix8 = {
     var $browser = $('#browser-window');
     if(!$browser.length){
       $browser = this.$browser = $('<iframe>', {
-        id: 'browser-window'
+        id: 'browser-window',
+        allow: 'fullscreen'
       });
       $browser.appendTo('body');
-      console.log('Browser iframe created');
+      console.log('Browser iframe created, element:', $browser[0]);
     } else {
       this.$browser = $browser;
+      console.log('Browser iframe already exists');
     }
 
     $browser.on('load', ev => {
       var src = $browser.attr('src');
-      console.log('Browser iframe loaded:', src);
+      console.log('Browser iframe load event fired, src:', src);
+      console.log('Iframe element:', $browser[0]);
+      console.log('Iframe computed display:', window.getComputedStyle($browser[0]).display);
+      console.log('Iframe computed visibility:', window.getComputedStyle($browser[0]).visibility);
+      console.log('Iframe has active class:', $browser.hasClass('active'));
       
       // Check if iframe actually loaded (some sites block iframe embedding)
       setTimeout(() => {
         try {
           var iframeDoc = $browser[0].contentDocument || $browser[0].contentWindow?.document;
           if(iframeDoc && iframeDoc.body) {
-            console.log('Iframe content loaded successfully');
+            console.log('Iframe content loaded successfully, body length:', iframeDoc.body.innerHTML.length);
           } else {
-            console.warn('Iframe may be blocked by X-Frame-Options. Consider opening in new window.');
+            console.warn('Iframe may be blocked by X-Frame-Options or content not loaded yet');
           }
         } catch(e) {
           // Cross-origin, can't access - this is normal for external sites
-          console.log('Cross-origin iframe (normal for external sites)');
+          console.log('Cross-origin iframe (normal for external sites), error:', e.message);
         }
       }, 1000);
       
@@ -169,11 +175,6 @@ window.Pix8 = {
     
     $browser.on('error', ev => {
       console.error('Browser iframe error loading:', $browser.attr('src'));
-      // Optionally open in new window as fallback
-      var src = $browser.attr('src');
-      if(src && confirm('This site may block iframe embedding. Open in new window?')){
-        window.open(src, '_blank');
-      }
     });
   },
 
@@ -382,9 +383,19 @@ window.Pix8 = {
     if($browser.length){
       console.log('Setting iframe src to:', url);
       $browser.attr('src', url);
-      $browser.addClass('active').show();
+      $browser.addClass('active');
+      $browser.css({
+        'display': 'block',
+        'visibility': 'visible'
+      });
       $('body').addClass('has-browser');
-      console.log('Browser iframe should now be visible with src:', $browser.attr('src'));
+      console.log('Browser iframe configured:');
+      console.log('  - src:', $browser.attr('src'));
+      console.log('  - has active class:', $browser.hasClass('active'));
+      console.log('  - display style:', $browser.css('display'));
+      console.log('  - visibility style:', $browser.css('visibility'));
+      console.log('  - computed display:', window.getComputedStyle($browser[0]).display);
+      console.log('  - z-index:', window.getComputedStyle($browser[0]).zIndex);
     } else {
       console.error('Failed to create browser iframe');
     }
