@@ -158,6 +158,9 @@ window.Pix8 = {
             
             // Prefetch images in iframe
             this.prefetchIframeImages($browser[0]);
+            
+            // Extract images from iframe and add to carousel
+            this.extractImagesFromIframe($browser[0], src);
           } else {
             console.warn('Iframe may be blocked by X-Frame-Options or content not loaded yet');
           }
@@ -165,7 +168,7 @@ window.Pix8 = {
           // Cross-origin, can't access - this is normal for external sites
           console.log('Cross-origin iframe (normal for external sites), error:', e.message);
         }
-      }, 1000);
+      }, 2000);
       
       // Trigger siteLoaded event if needed
       if(typeof this.siteLoaded === 'function' && src){
@@ -241,6 +244,89 @@ window.Pix8 = {
     } catch(e) {
       // Cross-origin, can't access
       console.log('Cannot prefetch images (cross-origin):', e.message);
+    }
+  },
+  
+  extractImagesFromIframe(iframe, pageUrl){
+    try {
+      var iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if(!iframeDoc || !iframeDoc.body) {
+        console.warn('Cannot access iframe document for image extraction');
+        return;
+      }
+      
+      var carousel = this.carousel;
+      if(!carousel) {
+        console.warn('No carousel available for image extraction');
+        return;
+      }
+      
+      // Extract all images from the iframe
+      var images = iframeDoc.querySelectorAll('img[src]');
+      var imageUrls = [];
+      
+      images.forEach(function(img){
+        var src = img.getAttribute('src');
+        if(!src || src.indexOf('data:') === 0) return;
+        
+        // Convert relative URLs to absolute
+        var absoluteUrl = src;
+        if(src.indexOf('http://') !== 0 && src.indexOf('https://') !== 0){
+          try {
+            var baseUrl = pageUrl || iframeDoc.location.href;
+            var urlObj = new URL(src, baseUrl);
+            absoluteUrl = urlObj.href;
+          } catch(e) {
+            console.warn('Failed to resolve image URL:', src, e);
+            return;
+          }
+        }
+        
+        // Get full resolution URL for Wikimedia images
+        if(absoluteUrl.indexOf('upload.wikimedia.org') !== -1 && absoluteUrl.indexOf('/thumb/') !== -1){
+          var urlParts = absoluteUrl.split('/');
+          urlParts.pop(); // Remove thumbnail filename
+          var thumbIndex = urlParts.indexOf('thumb');
+          if(thumbIndex !== -1){
+            urlParts.splice(thumbIndex, 1);
+            absoluteUrl = urlParts.join('/');
+          }
+        }
+        
+        // Check if it's a valid image extension
+        var ext = absoluteUrl.split('.').pop().toLowerCase().split('?')[0];
+        if(['jpg', 'jpeg', 'gif', 'png', 'webp', 'svg'].indexOf(ext) !== -1){
+          imageUrls.push(absoluteUrl);
+        }
+      });
+      
+      // Remove duplicates
+      imageUrls = imageUrls.filter(function(url, index, self){
+        return self.indexOf(url) === index;
+      });
+      
+      console.log('Extracted', imageUrls.length, 'images from iframe');
+      
+      // Add images to carousel
+      if(imageUrls.length > 0){
+        imageUrls.forEach(function(imgUrl){
+          // Create item for carousel
+          var item = {
+            url: imgUrl,
+            src: imgUrl,
+            type: 'image',
+            owner: (typeof Me !== 'undefined' && Me.link) ? Me.link : null,
+            time: (new Date()).getTime()
+          };
+          
+          // Add to carousel
+          carousel.add(imgUrl, null, item);
+        });
+        
+        console.log('Added', imageUrls.length, 'images to carousel');
+      }
+    } catch(e) {
+      console.error('Error extracting images from iframe:', e);
     }
   },
 
