@@ -44,12 +44,4 @@ $(document).on('loaded', ev => {
       log: d
     });
   }
-  
-  // Test browser iframe functionality
-  setTimeout(() => {
-    if(typeof Pix8 !== 'undefined' && typeof Pix8.onSite === 'function') {
-      console.log('=== TESTING: Loading example.com ===');
-      Pix8.onSite('https://example.com');
-    }
-  }, 2000);
 });
