@@ -304,8 +304,21 @@
 }
 
 #browser-window{
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100vh;
+    border: none;
+    z-index: 50;
+    background: white;
+    display: none; /* Hidden by default, shown when URL is loaded */
+}
+
+#browser-window.active{
     display: block;
-    flex-grow: 1;
-    border: 0;
+}
+
+body.has-browser #pic{
+    z-index: 100; /* Keep pix8 header above browser */
 }

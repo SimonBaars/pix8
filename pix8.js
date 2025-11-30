@@ -125,19 +125,35 @@ window.Pix8 = {
     if(!$browser.length){
       $browser = this.$browser = $('<iframe>', {
         id: 'browser-window',
-        style: 'width: 100%; height: calc(100vh - 200px); border: none; display: block;'
+        sandbox: 'allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation'
       });
       $browser.appendTo('body');
+      console.log('Browser iframe created');
     } else {
       this.$browser = $browser;
     }
 
     $browser.on('load', ev => {
-      console.log('Browser iframe loaded:', $browser.attr('src'));
+      var src = $browser.attr('src');
+      console.log('Browser iframe loaded:', src);
       // Trigger siteLoaded event if needed
-      if(typeof this.siteLoaded === 'function'){
-        this.siteLoaded({target: {document: {src: $browser.attr('src'), title: $browser[0].contentDocument?.title || ''}}});
+      if(typeof this.siteLoaded === 'function' && src){
+        try {
+          var title = '';
+          try {
+            title = $browser[0].contentDocument?.title || '';
+          } catch(e) {
+            // Cross-origin, can't access
+          }
+          this.siteLoaded({target: {document: {src: src, title: title}}});
+        } catch(e) {
+          console.warn('Error in siteLoaded:', e);
+        }
       }
+    });
+    
+    $browser.on('error', ev => {
+      console.error('Browser iframe error loading:', $browser.attr('src'));
     });
   },
 
@@ -338,6 +354,19 @@ window.Pix8 = {
     var $browser = $('#browser-window');
     if($browser.length){
       $browser.attr('src', url);
+      $browser.addClass('active');
+      $('body').addClass('has-browser');
+      console.log('Loading URL in browser iframe:', url);
+    } else {
+      console.warn('Browser iframe not found, creating it...');
+      // If iframe doesn't exist, create it
+      this.initBrowser();
+      $browser = $('#browser-window');
+      if($browser.length){
+        $browser.attr('src', url);
+        $browser.addClass('active');
+        $('body').addClass('has-browser');
+      }
     }
     
     // Create link and load into carousel
