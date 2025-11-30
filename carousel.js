@@ -269,6 +269,43 @@ Carousel.prototype = {
 		this.expand();
 	},
 
+	laylink: function(link){
+		var carousel = this;
+		if(!link) return;
+		
+		this.link = link;
+		
+		link.load(function(item){
+			if(item){
+				// If item has items array, load those items
+				if(item.items && Array.isArray(item.items)){
+					carousel.load(item.items);
+				} else {
+					// Otherwise load the item itself
+					carousel.load([item]);
+				}
+			} else {
+				// If no item exists, create a new one from the link URL
+				var url = link.url || link.link;
+				if(url){
+					var newItem = {
+						url: url,
+						owner: (typeof Me !== 'undefined' && Me.link) ? Me.link : null,
+						time: (new Date()).getTime()
+					};
+					
+					if(link.save){
+						link.save(newItem).then(function(r){
+							if(r) carousel.load([newItem]);
+						});
+					} else {
+						carousel.load([newItem]);
+					}
+				}
+			}
+		});
+	},
+
 	parseUrl: function(url){
 		url = url.split('/').slice(0,4).join('/');
 		if(url.indexOf('#')+1)
