@@ -372,21 +372,21 @@ window.Pix8 = {
     
     // Load URL in browser iframe if it exists
     var $browser = $('#browser-window');
-    if($browser.length){
-      $browser.attr('src', url);
-      $browser.addClass('active');
-      $('body').addClass('has-browser');
-      console.log('Loading URL in browser iframe:', url);
-    } else {
+    if(!$browser.length){
       console.warn('Browser iframe not found, creating it...');
       // If iframe doesn't exist, create it
       this.initBrowser();
       $browser = $('#browser-window');
-      if($browser.length){
-        $browser.attr('src', url);
-        $browser.addClass('active');
-        $('body').addClass('has-browser');
-      }
+    }
+    
+    if($browser.length){
+      console.log('Setting iframe src to:', url);
+      $browser.attr('src', url);
+      $browser.addClass('active').show();
+      $('body').addClass('has-browser');
+      console.log('Browser iframe should now be visible with src:', $browser.attr('src'));
+    } else {
+      console.error('Failed to create browser iframe');
     }
     
     // Create link and load into carousel
