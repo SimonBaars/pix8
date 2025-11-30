@@ -378,6 +378,10 @@ window.Pix8 = {
     // Update URL input field
     $('#pix8-url').val(url);
     
+    // Use proxy for sites that might block iframes (like Google)
+    // Proxy URL format: /proxy?u=<encoded-url>
+    var proxyUrl = '/proxy?u=' + encodeURIComponent(url);
+    
     // Load URL in browser iframe if it exists
     var $browser = $('#browser-window');
     if(!$browser.length){
@@ -388,9 +392,9 @@ window.Pix8 = {
     }
     
     if($browser.length){
-      console.log('Setting iframe src to:', url);
+      console.log('Setting iframe src to proxy URL:', proxyUrl, 'for original URL:', url);
       var picHeight = $('#pic').height() || 0;
-      $browser.attr('src', url);
+      $browser.attr('src', proxyUrl);
       $browser.addClass('active');
       $browser.css({
         'display': 'block',

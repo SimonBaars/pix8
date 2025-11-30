@@ -20,6 +20,7 @@ modules:
   - site
   - socket
   - fs
+  - proxy
 
 loadSet:
   - lastSync
@@ -27,8 +28,7 @@ loadSet:
 fs:
   collection: 'files'
   allowed:
-    - 'C:/8'
-    - 'C:/88'
+    - '/tmp/duke/pix8_data'
   folder:
     item: 'pix8.json'
 
@@ -36,8 +36,8 @@ path:
   modules: './modules/'
   files: './upl/'
   tmp: './tmp/'
-  ffmpeg: "./bin/ffmpeg.exe"
-  ffprobe: "C:/lib/ffmpeg/bin/ffprobe.exe"
+  ffmpeg: ""
+  ffprobe: ""
   youtube: './tube/'
   certificates: 'certificates/'
 
