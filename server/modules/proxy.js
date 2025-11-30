@@ -1,7 +1,12 @@
 var http = require('http');
 var https = require('https');
 var url = require('url');
-var cheerio = require('cheerio');
+var cheerio;
+try {
+  cheerio = require('cheerio');
+} catch(e) {
+  console.log('cheerio not available, HTML rewriting disabled');
+}
 
 // Proxy endpoint to bypass X-Frame-Options
 GET['proxy'] = function(q){
@@ -47,7 +52,7 @@ GET['proxy'] = function(q){
 			var content = body.toString('utf8');
 
 			// If HTML, rewrite URLs to go through proxy
-			if(isHtml){
+			if(isHtml && cheerio){
 				try {
 					var $ = cheerio.load(content);
 					var baseUrl = targetUrl;
