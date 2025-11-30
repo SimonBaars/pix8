@@ -270,7 +270,9 @@ Carousel.prototype = {
 				t.add(url);
 			}
 		});
-		this.expand();
+		if(typeof this.expand === 'function') {
+			this.expand();
+		}
 	},
 
 	laylink: function(link){
