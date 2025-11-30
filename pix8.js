@@ -282,9 +282,14 @@ window.Pix8 = {
         var absoluteUrl = src;
         if(src.indexOf('http://') !== 0 && src.indexOf('https://') !== 0){
           try {
-            var baseUrl = pageUrl || iframeDoc.location.href;
-            var urlObj = new URL(src, baseUrl);
-            absoluteUrl = urlObj.href;
+            // Handle protocol-relative URLs (//example.com)
+            if(src.indexOf('//') === 0){
+              absoluteUrl = 'https:' + src;
+            } else {
+              var baseUrl = pageUrl || iframeDoc.location.href;
+              var urlObj = new URL(src, baseUrl);
+              absoluteUrl = urlObj.href;
+            }
           } catch(e) {
             console.warn('Failed to resolve image URL:', src, e);
             return;
