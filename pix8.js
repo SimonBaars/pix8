@@ -201,16 +201,25 @@ window.Pix8 = {
       if(ev.data && ev.data.type === 'iframe-navigation'){
         var url = ev.data.url;
         // Extract original URL from proxy URL if needed
+        var originalUrl = url;
         if(url.indexOf('/proxy?u=') === 0){
           try {
-            url = decodeURIComponent(url.split('u=')[1].split('&')[0]);
+            originalUrl = decodeURIComponent(url.split('u=')[1].split('&')[0]);
           } catch(e) {
             console.warn('Error decoding proxy URL:', e);
           }
         }
         // Update URL input field
-        $('#pix8-url').val(url);
-        console.log('Iframe navigated to:', url);
+        $('#pix8-url').val(originalUrl);
+        console.log('Iframe navigated to:', originalUrl);
+        
+        // Extract images from the new page after navigation
+        setTimeout(() => {
+          var $browser = $('#browser-window');
+          if($browser.length){
+            this.extractImagesFromIframe($browser[0], originalUrl);
+          }
+        }, 2000);
       }
     });
     

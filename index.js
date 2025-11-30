@@ -44,4 +44,13 @@ $(document).on('loaded', ev => {
       log: d
     });
   }
+  
+  // Test: Load Wikipedia article with images
+  setTimeout(() => {
+    if(typeof Pix8 !== 'undefined' && typeof Pix8.onSite === 'function') {
+      console.log('=== TESTING: Loading Wikipedia article with images ===');
+      // Load a Wikipedia article that has images (e.g., "Cat" article)
+      Pix8.onSite('https://en.wikipedia.org/wiki/Cat');
+    }
+  }, 2000);
 });
