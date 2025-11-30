@@ -1,15 +1,15 @@
-port: 80
+port: 8080
 storage:
-  home: 'C:\8\me'
-  private: 'C:\8\private'
-  items: 'C:\8\items'
-  dats: 'C:\8\dats'
-  wiki: 'C:\8\wiki'
-  youtubes: 'C:\8\youtubes'
-ggif_app: 'C:\8\ggif'
+  home: '/tmp/duke/pix8_data/me'
+  private: '/tmp/duke/pix8_data/private'
+  items: '/tmp/duke/pix8_data/items'
+  dats: '/tmp/duke/pix8_data/dats'
+  wiki: '/tmp/duke/pix8_data/wiki'
+  youtubes: '/tmp/duke/pix8_data/youtubes'
+ggif_app: ''
 
-ffmpeg: '../bin/ffmpeg.exe'
-ffprobe: '../bin/ffprobe.exe'
+ffmpeg: ''
+ffprobe: ''
 
 windows:
   index:
