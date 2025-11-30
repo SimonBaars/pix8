@@ -209,7 +209,7 @@ GET['proxy'] = function(q){
 				}
 			}
 
-			// Remove X-Frame-Options and CSP headers
+			// Remove X-Frame-Options and CSP headers that block our functionality
 			var headers = {};
 			for(var key in res.headers){
 				var lowerKey = key.toLowerCase();
@@ -225,9 +225,10 @@ GET['proxy'] = function(q){
 				headers['Content-Type'] = contentType;
 			}
 
-			// Allow iframe embedding
+			// Allow iframe embedding and inline scripts for navigation
 			headers['X-Frame-Options'] = 'ALLOWALL';
-			headers['Content-Security-Policy'] = "frame-ancestors *;";
+			// Allow inline scripts for navigation handler, but keep other CSP protections
+			headers['Content-Security-Policy'] = "frame-ancestors *; script-src 'unsafe-inline' 'unsafe-eval' https: http: data: blob:;";
 
 			q.res.writeHead(res.statusCode || 200, headers);
 			q.res.end(content);
