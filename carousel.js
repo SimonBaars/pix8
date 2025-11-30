@@ -325,6 +325,10 @@ Carousel.prototype = {
 	},
 
 	createThumb: function(url){
+		if(!url || typeof url !== 'string') {
+			console.warn('createThumb: invalid url', url);
+			return $('<span>');
+		}
 		var wh = this.$t.height(),
 			name = url.split('/').pop();
 
@@ -334,7 +338,7 @@ Carousel.prototype = {
 		var img = new Image;
 		var $thumb = $(img).attr({
 			name: name,
-			src: src || url,
+			src: url,
 			href: url
 		}).addClass('thumb');
 		img.onerror = function(){
