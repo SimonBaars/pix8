@@ -124,8 +124,7 @@ window.Pix8 = {
     var $browser = $('#browser-window');
     if(!$browser.length){
       $browser = this.$browser = $('<iframe>', {
-        id: 'browser-window',
-        sandbox: 'allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation'
+        id: 'browser-window'
       });
       $browser.appendTo('body');
       console.log('Browser iframe created');
