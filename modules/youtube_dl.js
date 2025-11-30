@@ -1,16 +1,31 @@
-var FS = require('fs');
+// Only load Node.js modules in Electron/Node environment
+var FS, ytdl, YAML, ffmpeg;
+if (typeof require !== 'undefined' && (window.isElectron || typeof process !== 'undefined' && process.versions && process.versions.electron)) {
+  try {
+    FS = require('fs');
+    ytdl = require('ytdl-core');
+    YAML = require('js-yaml');
+    ffmpeg = require('fluent-ffmpeg');
+    if (ffmpeg.setFfmpegPath) {
+      ffmpeg.setFfmpegPath('./bin/ffmpeg.exe');
+    }
+  } catch(e) {
+    console.warn('youtube_dl module: Node.js dependencies not available', e);
+  }
+}
+
 var log = t => console.log(t);
-
-const ytdl = require('ytdl-core');
-var YAML = require('js-yaml');
-
-var ffmpeg = require('fluent-ffmpeg');
-ffmpeg.setFfmpegPath('./bin/ffmpeg.exe');
 
 $(document).on('pref', ev => {
   Pix8.onPlus.youtube = d => {
+    if (!FS || !ytdl || !YAML) {
+      console.warn('youtube_dl: Node.js environment required');
+      return;
+    }
+    
     var dat = Dats[(Pref.youtubes || '').split('://')[1]];
-    var folder = dat?dat.path:JP(require('os').homedir(), 'youtubes');
+    var os = require('os');
+    var folder = dat?dat.path:JP(os.homedir(), 'youtubes');
 
     const key = dat.key.toString('hex');
 
@@ -38,7 +53,8 @@ $(document).on('pref', ev => {
       var thumb = 'https://img.youtube.com/vi/'+d+'/hqdefault.jpg';
 
       var file = FS.createWriteStream(JP(dat.path, d+'.jpg'));
-      var request = require('https').get(thumb, response => {
+      var https = require('https');
+      var request = https.get(thumb, response => {
         response.pipe(file);
 
 
