@@ -309,18 +309,20 @@
     left: 0;
     width: 100%;
     height: 100vh;
-    border: none;
+    border: 2px solid red; /* Temporary: make iframe visible for debugging */
     z-index: 1;
     background: white;
     display: none; /* Hidden by default, shown when URL is loaded */
     margin-top: 0;
     visibility: hidden;
+    opacity: 1;
 }
 
 #browser-window.active{
     display: block !important;
     visibility: visible !important;
     z-index: 1 !important;
+    opacity: 1 !important;
 }
 
 body.has-browser #pic{
