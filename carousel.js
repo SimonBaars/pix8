@@ -264,7 +264,11 @@ Carousel.prototype = {
 	load: function(items){
 		var t = this;
 		if(items) items.forEach(function(item){
-			t.add(item);
+			// Handle both URL strings and item objects
+			var url = (typeof item === 'string') ? item : (item.url || item.src || item.href);
+			if(url) {
+				t.add(url);
+			}
 		});
 		this.expand();
 	},
