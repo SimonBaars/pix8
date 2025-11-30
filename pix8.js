@@ -20,7 +20,7 @@ window.Pix8 = {
       Pix8.onSite(this.value);
     })
 
-    $url.keyup(function(ev){f
+    $url.keyup(function(ev){
       t.search(''+this.value);
     }).blur(ev => {
 
