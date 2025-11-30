@@ -47,6 +47,18 @@
     object-fit: contain;
 }
 
+#browser-window{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 200px);
+    border: none;
+    z-index: 100;
+    background: white;
+    margin-top: 200px;
+}
+
 #play, #edit, #save, #game, #resize{
     float: left;
     height: inherit;

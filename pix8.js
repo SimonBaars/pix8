@@ -33,8 +33,8 @@ window.Pix8 = {
     Pix8.initList();
     if(window.isElectron){
       Pix8.iniElectron();
-      Pix8.initBrowser();
     }
+    Pix8.initBrowser();
 
     //Pix8.initGgif();
 
@@ -120,12 +120,24 @@ window.Pix8 = {
   },
 
   initBrowser(){
-    var $browser = this.$browser = $('<iframe>', {id: 'browser-window'});
-    $browser.appendTo('body');
+    // Create browser iframe if it doesn't exist
+    var $browser = $('#browser-window');
+    if(!$browser.length){
+      $browser = this.$browser = $('<iframe>', {
+        id: 'browser-window',
+        style: 'width: 100%; height: calc(100vh - 200px); border: none; display: block;'
+      });
+      $browser.appendTo('body');
+    } else {
+      this.$browser = $browser;
+    }
 
-    $browser.load(ev => {
-      console.log(ev);
-
+    $browser.on('load', ev => {
+      console.log('Browser iframe loaded:', $browser.attr('src'));
+      // Trigger siteLoaded event if needed
+      if(typeof this.siteLoaded === 'function'){
+        this.siteLoaded({target: {document: {src: $browser.attr('src'), title: $browser[0].contentDocument?.title || ''}}});
+      }
     });
   },
 
@@ -244,18 +256,22 @@ window.Pix8 = {
   },
 
   siteLoaded: function(site){
-    var url = ev.target.document.src;
+    if(!site || !site.target) return;
+    var url = site.target.document ? site.target.document.src : (site.target.src || '');
+    if(!url) return;
+    
     var link = new Link(this.sites_link+md5(url)+'.yaml');
-    this.link.load(item => {
+    link.load(item => {
       if(item){
         this.carousel.link = link;
         this.carousel.loadView(item);
       } else{
         var item = {
-          url,
+          url: url,
           type: 'site',
-          title: ev.target.document.title
+          title: (site.target.document && site.target.document.title) || ''
         };
+        link.save(item);
       }
     });
   },
@@ -313,31 +329,46 @@ window.Pix8 = {
 
 
   onSite(url){
+    if(!url) return;
+    
+    // Update URL input field
+    $('#pix8-url').val(url);
+    
+    // Load URL in browser iframe if it exists
+    var $browser = $('#browser-window');
+    if($browser.length){
+      $browser.attr('src', url);
+    }
+    
+    // Create link and load into carousel
     var link = Link(url);
-    this.carousel.laylink(link);
-
-    return;
-    var link = Link(url);
-
     var carousel = this.carousel;
+    carousel.link = link;
+    
     link.load(item => {
-      $('#pix8-url').val(url);
-      $('#browser-window').attr('src', url);
-      carousel.link = link;
-
       if(item){
-        carousel.load(item);
-      }
-      else{
-        item = {
-          url,
-          owner: Me.link,
-      		time: (new Date()).getTime()
+        // If item has items array, load those items
+        if(item.items && Array.isArray(item.items)){
+          carousel.load(item.items);
+        } else {
+          // Otherwise load the item itself
+          carousel.load([item]);
         }
-
-        link.save(item).then(r => {
-          carousel.load(item);
-        });
+      } else {
+        // If no item exists, create a new one from the URL
+        var newItem = {
+          url: url,
+          owner: (typeof Me !== 'undefined' && Me.link) ? Me.link : null,
+          time: (new Date()).getTime()
+        };
+        
+        if(link.save){
+          link.save(newItem).then(r => {
+            if(r) carousel.load([newItem]);
+          });
+        } else {
+          carousel.load([newItem]);
+        }
       }
     });
   },
