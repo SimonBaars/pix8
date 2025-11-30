@@ -53,6 +53,13 @@ window.Pix8 = {
       $('.page').height(window.innerHeight - height);
       $('body').css('margin-top', height);
     }
+    
+    // Adjust browser iframe position when pix8 header resizes
+    var $browser = $('#browser-window');
+    if($browser.length && $browser.hasClass('active')){
+      $browser.css('top', height + 'px');
+      $browser.css('height', 'calc(100vh - ' + height + 'px)');
+    }
 
     return;
 		var height = $('#pic').height();
@@ -382,11 +389,15 @@ window.Pix8 = {
     
     if($browser.length){
       console.log('Setting iframe src to:', url);
+      var picHeight = $('#pic').height() || 0;
       $browser.attr('src', url);
       $browser.addClass('active');
       $browser.css({
         'display': 'block',
-        'visibility': 'visible'
+        'visibility': 'visible',
+        'top': picHeight + 'px',
+        'height': 'calc(100vh - ' + picHeight + 'px)',
+        'z-index': '10'
       });
       $('body').addClass('has-browser');
       console.log('Browser iframe configured:');
@@ -394,6 +405,8 @@ window.Pix8 = {
       console.log('  - has active class:', $browser.hasClass('active'));
       console.log('  - display style:', $browser.css('display'));
       console.log('  - visibility style:', $browser.css('visibility'));
+      console.log('  - top:', $browser.css('top'));
+      console.log('  - height:', $browser.css('height'));
       console.log('  - computed display:', window.getComputedStyle($browser[0]).display);
       console.log('  - z-index:', window.getComputedStyle($browser[0]).zIndex);
     } else {
